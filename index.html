@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CryptoidPad — GIWA Launchpad Explorer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d7a4a'/%3E%3Ctext x='16' y='23' font-size='19' font-family='sans-serif' font-weight='bold' text-anchor='middle' fill='%23fff'%3EC%3C/text%3E%3C/svg%3E">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0f14; color: #dbe4ee; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 28px 20px 10px; max-width: 1080px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 30px; letter-spacing: .2px; }
+  h1 span { color: #6ee7a8; }
+  .sub { color: #8fa3b8; margin: 0 0 6px; }
+  .badge { display: inline-block; background: #122b1e; color: #6ee7a8; border: 1px solid #1f4d33; border-radius: 999px; padding: 2px 10px; font-size: 12.5px; margin: 4px 6px 0 0; }
+  main { max-width: 1080px; margin: 0 auto; padding: 12px 20px 40px; }
+  section { background: #10161f; border: 1px solid #1d2836; border-radius: 12px; padding: 16px 18px; margin: 16px 0; }
+  h2 { margin: 0 0 10px; font-size: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #1d2836; vertical-align: top; }
+  th { color: #8fa3b8; font-weight: 600; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; word-break: break-all; }
+  .ok { color: #6ee7a8; } .warn { color: #f5c542; } .err { color: #ff7a7a; } .dim { color: #8fa3b8; }
+  #configTable tbody tr { cursor: pointer; }
+  #configTable tbody tr:hover { background: #16202c; }
+  #configTable tbody tr.selected { background: #16283a; }
+  #detail { white-space: pre-wrap; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  input[type="text"], input[type="number"], select { background: #0b0f14; border: 1px solid #2a3a4d; color: #dbe4ee; border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+  button { background: #1d7a4a; color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-size: 14px; cursor: pointer; }
+  button:hover { background: #24965c; }
+  button:disabled { opacity: .5; cursor: wait; }
+  #quoteOut { margin-top: 12px; }
+  .kv { display: grid; grid-template-columns: 190px 1fr; gap: 4px 12px; font-size: 13.5px; }
+  .kv dt { color: #8fa3b8; } .kv dd { margin: 0; }
+  footer { max-width: 1080px; margin: 0 auto; padding: 0 20px 32px; color: #8fa3b8; font-size: 13px; }
+  a { color: #6ee7a8; }
+  .scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cryptoid<span>Pad</span></h1>
+  <p class="sub">A mini launchpad explorer for GIWA Sepolia, built with the Ammora SDK.</p>
+  <span class="badge">Read-only</span>
+  <span class="badge">No wallet needed</span>
+  <span class="badge">Never asks for a signature</span>
+  <span class="badge">Never sends a transaction</span>
+</header>
+<main>
+  <section>
+    <h2>Deployment</h2>
+    <p class="dim" id="deployStatus">Loading deployment from the SDK catalog…</p>
+    <dl class="kv" id="deployKv"></dl>
+  </section>
+
+  <section>
+    <h2>Live core verification</h2>
+    <p id="verifyStatus">Resolving the finalized head…</p>
+    <dl class="kv" id="verifyKv"></dl>
+  </section>
+
+  <section>
+    <h2>Launch configs</h2>
+    <p class="dim" id="configStatus">Waiting for the finalized head…</p>
+    <div class="scroll">
+      <table id="configTable">
+        <thead>
+          <tr>
+            <th class="num">ID</th><th>Status</th><th>Owner</th><th>Quote token</th>
+            <th class="num">Total supply</th><th class="num">Dec</th><th>Migration</th><th class="num">Segments</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <h3 style="margin:16px 0 6px;font-size:15px;">Config detail</h3>
+    <p class="dim" id="detailHint">Click any config row above to inspect its full launch parameters, exactly as stored in the Ammora ConfigRegistry.</p>
+    <div class="mono" id="detail"></div>
+  </section>
+
+  <section>
+    <h2>Swap quote (read-only)</h2>
+    <p class="dim">Live quote from the Ammora route client for WETH → a live Ammora launch token. Quote only, no swap is executed and no wallet is connected. Note: tAMM itself has no reviewed route through the route client (the SDK refuses it on token-policy grounds), so the canary launches below are the quotable ones.</p>
+    <div class="row">
+      <label>From <b>WETH</b> <input id="quoteAmount" type="number" min="0" step="0.001" value="0.01" style="width:130px"> </label>
+      <span>→</span>
+      <label>To <select id="quoteToken"></select></label>
+      <button id="quoteBtn" disabled>Get quote</button>
+    </div>
+    <div id="quoteOut"><p class="dim">Enter an amount and press “Get quote”.</p></div>
+  </section>
+</main>
+<footer>
+  <p>Built by <a href="https://x.com/CryptoidIDN">@CryptoidIDN</a> for the Ammora Season 2 Builder Mission. All data is read live from GIWA Sepolia testnet contracts (chain 91342, RPC sepolia-rpc.giwa.io) via the Ammora SDK 0.3.9 and viem. Testnet only, not financial advice.</p>
+</footer>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

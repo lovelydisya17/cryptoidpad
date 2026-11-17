@@ -1,0 +1,10 @@
+{
+  "name": "cryptoidpad",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CryptoidPad — a mini launchpad explorer for GIWA Sepolia, built with the Ammora SDK.",
+  "type": "module",
+  "scripts": { "build": "esbuild src/main.js --bundle --format=esm --platform=browser --target=es2022 --outfile=app.js" },
+  "dependencies": { "@ammora-protocol/sdk": "0.3.9", "viem": "^2.38.0" },
+  "devDependencies": { "esbuild": "^0.25.0" }
+}
